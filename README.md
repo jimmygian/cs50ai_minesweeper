@@ -1,4 +1,4 @@
-# CS50AI | Lecture 1 - Knowledge | Project 1 - `Minesweeper`
+# CS50AI | Lecture 1 - Knowledge | Project 2 - `Minesweeper`
 
 This project is a mandatory assignment from **CS50AI – Lecture 1: "Knowledge"**.
 
