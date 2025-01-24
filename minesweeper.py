@@ -203,3 +203,56 @@ class MinesweeperAI():
             2) are not known to be mines
         """
         raise NotImplementedError
+
+
+# FOR DEBUG
+
+def printGame(height=3, width=3, mines=1):
+    game = Minesweeper(height, width, mines)
+    print("===============")
+    game.print()
+    print()
+    print("Height: ",game.height)
+    print("Width: ", game.width)
+    print("Mines: ",game.mines)
+    print("Board: ",game.board)
+    print("Mines found: ",game.mines_found)
+    print()
+    print("Is it a mine? ", game.is_mine((0,1)))
+    print("Which mines nearby? ", game.nearby_mines((0,1)))
+    print("===============")
+    print()
+
+def printGameAI(marked_mines, marked_safes, height=3, width=3):
+    gameai = MinesweeperAI(height, width)
+   
+    for mine in marked_mines:
+        gameai.mark_mine(mine)
+    
+    for mine in marked_safes:
+        gameai.mark_safe(mine)
+
+    print("AI Knowledge: ", gameai.knowledge)
+    print("Known Mines: ", gameai.mines)
+    print("Known Safes: ", gameai.safes)
+    print("Moves Made: ", gameai.moves_made)
+
+def printSentence():
+    sentence1 = Sentence(cells={(0,2), (3, 1)}, count=4)
+    sentence2 = Sentence(cells={(0,2), (3, 1)}, count=4)
+
+    print(sentence1 == sentence2)
+
+
+if __name__ == "__main__":
+    
+    # # DEBUG
+    # printGame(height=3, width=3, mines=1)
+
+    # marked_mines = set([(0,1), (1,0)])
+    # marked_safes = {(2,1), (2,2)}
+    # printGameAI(marked_mines, marked_safes)
+
+    printSentence()
+
+    
