@@ -105,13 +105,53 @@ class Sentence():
         """
         Returns the set of all cells in self.cells known to be mines.
         """
-        raise NotImplementedError
+
+
+        # - If all cells around a cell are 1 or 2 or 3, then that cell is a mine
+        for cell in self.cells:
+            print(cell)
+
+        mines_set = set()
+        return mines_set
+        # raise NotImplementedError
 
     def known_safes(self):
         """
         Returns the set of all cells in self.cells known to be safe.
         """
-        raise NotImplementedError
+
+        # - If a cell has a value of "0", all cells around it are safe
+        safe_blocks = set()
+        if self.count == 0:
+            for cell in self.cells:
+                x, y = cell
+
+                if not x-1 < 0 or not y < 0:
+                    safe_cells = {
+                        (x-1, y-1), 
+                        (x-1, y), 
+                        (x-1, y+1),
+                        (x+1, y-1),
+                        (x+1, y),
+                        (x+1, y+1),
+                        (x, y-1),
+                        (x, y+1),
+                        }           
+                    safe_blocks.update(safe_cells)
+        
+        cells_to_remove = set()
+        for cell in safe_blocks:
+            x, y = cell
+            if x < 0 or y < 0:
+                cells_to_remove.add(cell)
+        
+        # Remove all cells in cells_to_remove from safe_blocks
+        safe_blocks.difference_update(cells_to_remove)
+        
+        print("Cells to remove: ", cells_to_remove)
+
+        return safe_blocks
+    
 
     def mark_mine(self, cell):
         """
@@ -238,16 +278,17 @@ def printGameAI(marked_mines, marked_safes, height=3, width=3):
     print("Moves Made: ", gameai.moves_made)
 
 def printSentence():
-    sentence1 = Sentence(cells={(0,2), (3, 1)}, count=4)
-    sentence2 = Sentence(cells={(0,2), (3, 1)}, count=4)
-
-    print(sentence1 == sentence2)
+    sentence1 = Sentence(cells={(2,0), (2, 3)}, count=0)
+    inferred_sentence = sentence1.known_safes()
+    # sentence1.mark_safe({(0, 1)})
+    print("Sentence1: ", sentence1)
+    print("Inferred_sentence2: ", inferred_sentence)
 
 
 if __name__ == "__main__":
     
     # # DEBUG
-    # printGame(height=3, width=3, mines=1)
+    # printGame(height=4, width=4, mines=1)
 
     # marked_mines = set([(0,1), (1,0)])
     # marked_safes = {(2,1), (2,2)}
