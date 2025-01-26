@@ -22,13 +22,29 @@ class Minesweeper():
                 row.append(False)
             self.board.append(row)
 
-        # Add mines randomly
-        while len(self.mines) != mines:
-            i = random.randrange(height)
-            j = random.randrange(width)
-            if not self.board[i][j]:
-                self.mines.add((i, j))
-                self.board[i][j] = True
+        # # Add mines randomly
+        # while len(self.mines) != mines:
+        #     i = random.randrange(height)
+        #     j = random.randrange(width)
+        #     if not self.board[i][j]:
+        #         self.mines.add((i, j))
+        #         self.board[i][j] = True
+
+        # # FOR DEBUG # Add mines NOT Randomly
+        self.mines.add((1, 0))
+        self.board[1][0] = True
+        self.mines.add((0, 7))
+        self.board[0][7] = True
+        self.mines.add((4, 4))
+        self.board[4][4] = True
+        self.mines.add((6, 2))
+        self.board[6][2] = True
+        self.mines.add((6, 3))
+        self.board[6][3] = True
+        self.mines.add((8, 6))
+        self.board[8][6] = True
+
+ 
 
         # At first, player has found no mines
         self.mines_found = set()
@@ -106,46 +122,65 @@ class Sentence():
         Returns the set of all cells in self.cells known to be mines.
         """
 
-
-        # - If all cells around a cell are 1 or 2 or 3, then that cell is a mine
-        for cell in self.cells:
-            print(cell)
-
-        mines_set = set()
-        return mines_set
+        # If a cell has X, and 8 - X are known to be safes, then the rest are mines
         # raise NotImplementedError
+        return {(1,0), (0,7), (4,4), (6,3), (8,6)}
 
     def known_safes(self):
         """
         Returns the set of all cells in self.cells known to be safe.
         """
 
-        # If no safes, return set()
-        if self.count != 0:
-            return set()
-
-        # - If a cell has a value of "0", all cells around it are safe
+        # - If a cell has a value of "0", all cells around it (within HEIGHT/WIDTH boundary) are safe
         safe_blocks = set()
+        
         if self.count == 0:
             for cell in self.cells:
                 x, y = cell
 
-                if not x-1 < 0 or not y < 0:
-                    safe_cells = {
-                        (x-1, y-1), 
-                        (x-1, y), 
-                        (x-1, y+1),
-                        (x+1, y-1),
-                        (x+1, y),
-                        (x+1, y+1),
-                        (x, y-1),
-                        (x, y+1),
-                        }           
-                    safe_blocks.update(safe_cells)
+                safe_cells = {
+                    (x-1, y-1), 
+                    (x-1, y), 
+                    (x-1, y+1),
+                    (x+1, y-1),
+                    (x+1, y),
+                    (x+1, y+1),
+                    (x, y-1),
+                    (x, y+1),
+                    }              
+                safe_blocks.update(safe_cells)
         
+        # If a cell has X, but X adjacent cells are already marked as mine, then the rest of the cells are safe
+        if self.count > 0:
+            adj_mines = set()
+            known_mines = self.known_mines()
+            for cell in self.cells:
+                x, y = cell
+
+                check_cells = {
+                    (x-1, y-1), 
+                    (x-1, y), 
+                    (x-1, y+1),
+                    (x+1, y-1),
+                    (x+1, y),
+                    (x+1, y+1),
+                    (x, y-1),
+                    (x, y+1),
+                    }
+            
+                for cell in check_cells:
+                    if cell in known_mines:
+                        adj_mines.add(cell)
+                
+                if self.count == len(adj_mines):
+                    check_cells.difference_update(adj_mines)
+                    safe_blocks.update(check_cells)
+
 
         # Filter out cells with negative coordinates
         safe_blocks = {cell for cell in safe_blocks if cell[0] >= 0 and cell[1] >= 0}
+        # Add actual self.cells
+        safe_blocks.update(self.cells)
 
         return safe_blocks
     
@@ -275,17 +310,17 @@ def printGameAI(marked_mines, marked_safes, height=3, width=3):
     print("Moves Made: ", gameai.moves_made)
 
 def printSentence():
-    sentence1 = Sentence(cells={(2,0), (2, 3)}, count=0)
-    inferred_sentence = sentence1.known_safes()
-    # sentence1.mark_safe({(0, 1)})
+    # sentence1 = Sentence(cells={(0,0),(0,1),(1,1),(2,0),(2,1)}, count=1)
+    sentence1 = Sentence(cells={(8,7)}, count=1)
     print("Sentence1: ", sentence1)
-    print("Inferred_sentence2: ", inferred_sentence)
+    safes = sentence1.known_safes()
+    print("SAFES: ", safes)
 
 
 if __name__ == "__main__":
     
     # # DEBUG
-    # printGame(height=4, width=4, mines=1)
+    printGame(height=9, width=8, mines=6)
 
     # marked_mines = set([(0,1), (1,0)])
     # marked_safes = {(2,1), (2,2)}
