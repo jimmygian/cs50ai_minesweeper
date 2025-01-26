@@ -144,14 +144,19 @@ class Sentence():
         Updates internal knowledge representation given the fact that
         a cell is known to be a mine.
         """
-        raise NotImplementedError
+
+        if cell in self.cells:
+            self.cells.remove(cell)
+            self.count -= 1
 
     def mark_safe(self, cell):
         """
         Updates internal knowledge representation given the fact that
         a cell is known to be safe.
         """
-        raise NotImplementedError
+        if cell in self.cells:
+            self.cells.remove(cell)
+
 
 
 class MinesweeperAI():
@@ -264,13 +269,13 @@ def printGameAI(marked_mines, marked_safes, height=3, width=3):
     print("Moves Made: ", gameai.moves_made)
 
 def printSentence():
-    # sentence1 = Sentence(cells={(0,0),(0,1),(1,1),(2,0),(2,1)}, count=1)
-    sentence1 = Sentence(cells={(1,5),(1,6),(1,7),(2,5),(2,6),(2,7),(3,5),(3,6),(3,7)}, count=0)
-    sentence2 = Sentence(cells={(1,0),(1,4)}, count=2)
-    print("Sentence1: ", sentence1)
-    print("Safes1: ", sentence1.known_safes())
-    print("Sentence2: ", sentence2)
-    print("Mines2: ", sentence2.known_mines())
+    sentence = Sentence(cells={(4,1),(4,2),(4,3), (5,1),(5,3), (6,1), (6,2), (6,3)}, count=2)
+    print("Sentence: ", sentence)
+    sentence.mark_safe((5,3))
+    print("Sentence after marking: ", sentence)
+    print(sentence.known_mines())
+    print(sentence.known_safes())
+
 
 
 if __name__ == "__main__":
