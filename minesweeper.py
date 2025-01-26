@@ -120,6 +120,10 @@ class Sentence():
         Returns the set of all cells in self.cells known to be safe.
         """
 
+        # If no safes, return set()
+        if self.count != 0:
+            return set()
+
         # - If a cell has a value of "0", all cells around it are safe
         safe_blocks = set()
         if self.count == 0:
@@ -139,16 +143,9 @@ class Sentence():
                         }           
                     safe_blocks.update(safe_cells)
         
-        cells_to_remove = set()
-        for cell in safe_blocks:
-            x, y = cell
-            if x < 0 or y < 0:
-                cells_to_remove.add(cell)
-        
-        # Remove all cells in cells_to_remove from safe_blocks
-        safe_blocks.difference_update(cells_to_remove)
-        
-        print("Cells to remove: ", cells_to_remove)
+
+        # Filter out cells with negative coordinates
+        safe_blocks = {cell for cell in safe_blocks if cell[0] >= 0 and cell[1] >= 0}
 
         return safe_blocks
     
