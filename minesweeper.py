@@ -248,18 +248,26 @@ class MinesweeperAI():
         
         # 4) [WIP] Mark any additional cells as safe or as mines
         #          if it can be concluded based on the AI's knowledge base  
-        safe_cells = set()
-        mine_cells = set()
-        for sentence in self.knowledge:
-            safe_cells.update(sentence.known_safes())
-            mine_cells.update(sentence.known_mines())
-        
-        for cell in safe_cells:
-            self.mark_safe(cell)
-        for cell in mine_cells:
-            self.mark_mine(cell)
+        while True:
+            safe_cells = set()
+            mine_cells = set()
+            for sentence in self.knowledge:
+                known_mines = sentence.known_mines()
+                known_safes = sentence.known_safes()
+                safe_cells.update(known_safes)
+                mine_cells.update(known_mines)
+            
+            # Breaks loop when no more inferences can be made (a.k.a if no new cells were found) 
+            if not safe_cells and not mine_cells:
+                break
 
-        
+            for cell in safe_cells:
+                if cell not in self.safes:
+                    self.mark_safe(cell)
+            for cell in mine_cells:
+                if cell not in self.mines:
+                    self.mark_mine(cell)
+
 
 
     def make_safe_move(self):
