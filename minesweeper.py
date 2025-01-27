@@ -22,29 +22,29 @@ class Minesweeper():
                 row.append(False)
             self.board.append(row)
 
-        # # Add mines randomly
-        # while len(self.mines) != mines:
-        #     i = random.randrange(height)
-        #     j = random.randrange(width)
-        #     if not self.board[i][j]:
-        #         self.mines.add((i, j))
-        #         self.board[i][j] = True
+        # Add mines randomly
+        while len(self.mines) != mines:
+            i = random.randrange(height)
+            j = random.randrange(width)
+            if not self.board[i][j]:
+                self.mines.add((i, j))
+                self.board[i][j] = True
 
-        # # FOR DEBUG # Add mines NOT Randomly
-        self.mines.add((1, 0))
-        self.board[1][0] = True
-        self.mines.add((1, 4))
-        self.board[1][4] = True
-        self.mines.add((0, 7))
-        self.board[0][7] = True
-        self.mines.add((4, 4))
-        self.board[4][4] = True
-        self.mines.add((6, 2))
-        self.board[6][2] = True
-        self.mines.add((6, 3))
-        self.board[6][3] = True
-        self.mines.add((8, 6))
-        self.board[8][6] = True
+        # # # FOR DEBUG # Add mines NOT Randomly
+        # self.mines.add((1, 0))
+        # self.board[1][0] = True
+        # self.mines.add((1, 4))
+        # self.board[1][4] = True
+        # self.mines.add((0, 7))
+        # self.board[0][7] = True
+        # self.mines.add((4, 4))
+        # self.board[4][4] = True
+        # self.mines.add((6, 2))
+        # self.board[6][2] = True
+        # self.mines.add((6, 3))
+        # self.board[6][3] = True
+        # self.mines.add((8, 6))
+        # self.board[8][6] = True
 
  
 
@@ -241,27 +241,32 @@ class MinesweeperAI():
         
         cells_to_add = {
             cell for cell in filtered_cells 
-            if cell not in self.mines and cell not in self.safes
+            if cell not in self.mines or cell not in self.safes
         }
 
         self.knowledge.append(Sentence(cells_to_add, count))
         
-        # 4. mark any additional cells as safe or as mines
-        new_mines = set()
-        new_safes = set()
-        for sentence in self.knowledge:
-            new_mines.update(sentence.known_mines())
-            new_safes.update(sentence.known_safes())
-            
-        for cell in new_mines:
-            self.mark_mine(cell)
-        for cell in new_safes:
-            self.mark_safe(cell)
+        # # 4. mark any additional cells as safe or as mines
+        # while True:
+        #     new_mines = set()
+        #     new_safes = set()
+        #     for sentence in self.knowledge:
+        #         known_mines = sentence.known_mines()
+        #         known_safes = sentence.known_safes()
 
-        # 5. add any new sentences to the AI's knowledge base if they can be inferred from existing knowledge
-        # for sentence in self.knowledge:
-        #     print(sentence)
-        
+        #         new_mines.update(known_mines)
+        #         new_safes.update(known_safes)
+    
+        #     for cell in new_mines:
+        #         if cell not in self.mines:
+        #             self.mark_mine(cell)
+        #     for cell in new_safes:
+        #         if cell not in self.safes:
+        #             self.mark_safe(cell)
+            
+        #     # Break if no new mines or safes were found
+        #     if len(new_mines) == 0 and len(new_safes) == 0:
+        #         break
 
 
     def make_safe_move(self):
@@ -306,8 +311,6 @@ def printGame(height=3, width=3, mines=1):
 def printGameAI(height=3, width=3):
     gameai = MinesweeperAI(height, width)
 
-    gameai.add_knowledge((8,7), 1)
-    print()
     gameai.add_knowledge((6,6), 0)
     print()
     gameai.add_knowledge((8,4), 0)
