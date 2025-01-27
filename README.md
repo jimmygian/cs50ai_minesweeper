@@ -20,99 +20,121 @@ To run the project locally, follow these steps:
 
 <br>
 
-### Project Overview
+## Project Overview
 
-The project's task is to implement propositional logic for the AI agent to be able to solve [minesweeper](https://en.wikipedia.org/wiki/Minesweeper_(video_game)), a classic puzzle game.
+This project implements propositional logic to enable an AI agent to solve [Minesweeper](https://en.wikipedia.org/wiki/Minesweeper_(video_game)), a classic puzzle game.
 
-There are two main files in this project: `runner.py` and `minesweeper.py`. `minesweeper.py` contains all of the logic the game itself and for the AI to play the game. `runner.py` was already implemented, and contains all of the code to run the graphical interface for the game. 
+There are two main files in this project:
 
-In `minesweeper.py`, there are three classes defined, `Minesweeper`, which handles the gameplay (already implemented); `Sentence`, which represents a logical sentence that contains both a set of cells and a count; and `MinesweeperAI`, which handles inferring which moves to make based on knowledge. 
+- **`runner.py`**: Already implemented, this file contains the code for the graphical interface.
+- **`minesweeper.py`**: This file contains the core game logic and the AI that plays the game.
 
-My task was to implement the following functions:
+### Classes in `minesweeper.py`
 
-For the `Sentence` class:
+1. **`Minesweeper`**: Handles the gameplay (already implemented).
+2. **`Sentence`**: Represents a logical sentence that contains a set of cells and a count, used to infer knowledge about the game.
+3. **`MinesweeperAI`**: Manages the AI's reasoning and decision-making, making use of the knowledge base built from logical inference.
+
+### My Task
+
+I was responsible for implementing the following functions:
+
+#### In the `Sentence` class:
 - `known_mines()`
 - `known_safes()`
 - `mark_mine(cell)`
 - `mark_safe(cell)`
 
-For the `MinesweeperAI` class:
-- `add_knowledge()`
+#### In the `MinesweeperAI` class:
+- `add_knowledge(cell, count)`
 - `make_safe_move()`
 - `make_random_move()`
 
+## Implementation of `Sentence` Class
 
-### Implementation of `Sentence` class
+The `Sentence` class stores information about cells that are not yet known to be mines or safes. When a cell is marked as a mine or safe, it is removed from the sentence, and the knowledge base is updated accordingly.
 
-The sentence must only be holding information for cells that we don't know if they are mines or safes. This means that whenever we mark a cell as a safe or mine, we need to update our knowledge base so that this cell is removed (since we now know about it).
+### Sentence Representation
 
-The Sentence representation is as follows:
-`{A, B, C, D, E} = COUNT`, where letters are cells, and COUNT is an int representing how many of these cells are mines. So, if count was "2", it would mean that two of A, B, C, D, or E are mines, and the rest are safe cells.
-
-**`known_mines()`**:
-In this function, I am checking if the number of cells is same as the count. If count equals length, it means that all of these cells are munes.
-
-**`known_safes()`**:
-In this function, I am checking if count is zero, cause if it is, I know for sure that all cells are safes.
-
-**`mark_mine(cell)`**:
-I am checking if cell is part of my Sentence's cells. If yes, I am removing it since the sentence should not hold information about known cells. I am also decreasing the count by 1, since the knowledge should be about cells we are not sure about.
-
-**`mark_safe(cell)`**:
-Similarly to `known_mine(cell)`, I am checking if cell is part of my Sentence's cells. If yes, I am removing it from the sentence. There is no need to update count in this case since we did not remove a mine.
+A `Sentence` is represented as follows: `{A, B, C, D, E} = COUNT`
 
 
-### Function: `add_knowledge(cell, count)`
+Where:
+- `{A, B, C, D, E}` are the cells in the sentence.
+- `COUNT` is the number of mines among these cells.
 
-The `add_knowledge()` function is a core method in the `MinesweeperAI` class, responsible for updating the AI’s knowledge base when a safe cell is revealed. This method allows the AI to infer the status of neighboring cells, whether they are safe or contain mines, by utilizing logical reasoning.
+For example, if `COUNT = 2`, it means that two of the cells `{A, B, C, D, E}` are mines, and the rest are safe.
 
-#### Parameters:
-- `cell` (tuple): A tuple representing the coordinates of a safe cell, e.g., `(x, y)`, which the Minesweeper board reveals.
-- `count` (int): The number of mines in the neighboring cells around the given `cell`. This information is provided by the game when a safe cell is clicked.
+### Functions in `Sentence`
 
-#### Steps of Execution:
+- **`known_mines()`**:
+  - Checks if the number of cells equals the count. If true, all cells in the sentence are mines.
+  
+- **`known_safes()`**:
+  - Checks if the count is zero. If true, all cells in the sentence are safe.
+  
+- **`mark_mine(cell)`**:
+  - If the cell is part of the sentence, it is removed from the sentence, and the count is decreased by 1 since the mine is no longer part of the uncertain set.
+  
+- **`mark_safe(cell)`**:
+  - Similar to `mark_mine`, but no change is made to the count since a safe cell is removed without affecting the number of mines.
+
+## Function: `add_knowledge(cell, count)`
+
+The `add_knowledge()` function is crucial for updating the AI’s knowledge base when a safe cell is revealed. The AI uses this information to infer the status of neighboring cells.
+
+### Parameters
+
+- **`cell`** (tuple): The coordinates of a safe cell, e.g., `(x, y)`.
+- **`count`** (int): The number of mines in the neighboring cells around the given `cell`.
+
+### Steps of Execution
+
 1. **Mark the Cell as a Move**:  
-   The function first marks the given cell as a move that has been made by adding it to the `moves_made` set.
+   The function starts by adding the cell to the `moves_made` set, indicating that the move has been made.
 
 2. **Mark the Cell as Safe**:  
-   The `mark_safe(cell)` method is called to record that the current cell is safe. This removes the cell from any future consideration regarding mines.
+   The `mark_safe(cell)` method is called to register the cell as safe and remove it from further consideration.
 
 3. **Create a New Sentence**:  
-   Based on the given `cell` and `count`, the function generates a new logical `Sentence`. A `Sentence` represents a group of cells that *may* contain mines, and `count` tells how many mines are present within that group.
-
-   - It identifies all adjacent cells to the given `cell` by creating a set of potential neighboring coordinates using `itertools.product`.
-   - It then filters out any adjacent cells that are either already marked as mines or already marked as safe.
-   - The remaining cells are part of the `Sentence`, and their mine count is adjusted by subtracting the number of neighboring cells already known to be mines.
+   A new logical `Sentence` is created based on the `cell` and `count`. This sentence represents neighboring cells that might contain mines, with the given `count` indicating how many of them are mines.
+   - The function identifies adjacent cells and filters out those already marked as mines or safes.
+   - The remaining cells are part of the new sentence, and the count is adjusted based on how many of the neighboring cells are known to be mines.
 
 4. **Mark Known Safe and Mine Cells**:  
-   After adding the new `Sentence` to the knowledge base, the function tries to infer new information. It looks for cells that are known to be safe or mines across all sentences in the knowledge base and updates the `MinesweeperAI`'s `safes` and `mines` sets accordingly.
-
-   - If new safe cells are identified, they are marked as safe.
-   - Similarly, if new mine cells are identified, they are marked as mines.
+   The function updates the `MinesweeperAI`'s `safes` and `mines` sets by marking cells as safe or mines based on the knowledge base.
 
 5. **Sentence Inference**:  
-   The function then iterates over all pairs of sentences in the knowledge base to see if new inferences can be drawn:
-   - It checks if one sentence’s set of cells is a subset of another’s. If so, it infers a new `Sentence` that represents the remaining cells from the larger sentence, which could potentially be safe or contain mines.
-   - This inferred sentence is then added to the knowledge base.
+   The function iterates through all pairs of sentences and looks for subsets. If one sentence’s set of cells is a subset of another’s, a new `Sentence` is inferred and added to the knowledge base.
 
-6. **Repeat Inference until Completion**:  
-   The function continues this process of marking safe and mine cells and inferring new sentences until no more new information can be deduced. This loop ensures that the AI can make as many logical inferences as possible.
+6. **Repeat Inference Until Completion**:  
+   The process continues until no new inferences can be made, ensuring that the AI refines its knowledge base as much as possible.
 
-#### Key Points:
-- **Marking Cells**: As cells are identified as safe or containing mines, they are removed from sentences, allowing the knowledge base to become progressively more accurate.
-- **Logical Reasoning**: The AI uses propositional logic to infer new facts, such as identifying safe cells or mines based on the relationships between sentences.
-- **Efficient Inference**: The function continuously refines its knowledge base, adding new inferred sentences, until no further inferences can be made.
+### Key Points
 
-#### Example:
-Let’s consider an example to illustrate how `add_knowledge()` works:
+- **Marking Cells**: Cells identified as safe or containing mines are removed from sentences, improving the accuracy of the knowledge base.
+- **Logical Reasoning**: The AI uses propositional logic to infer new facts based on relationships between sentences.
+- **Efficient Inference**: The AI continuously updates its knowledge base and infers new information until no further inferences can be made.
 
-1. Suppose the AI clicks on cell `(2, 2)` and the game reveals that there are 1 mine in the neighboring cells.
+### Example
+
+Let’s walk through an example:
+
+1. The AI clicks on cell `(2, 2)` and reveals that there is 1 mine in the neighboring cells.
 2. The function will:
    - Mark cell `(2, 2)` as safe.
-   - Add a sentence representing the neighboring cells (e.g., `(1, 1)`, `(1, 2)`, `(1, 3)`, `(2, 1)`, `(2, 3)`, `(3, 1)`, `(3, 2)`, `(3, 3)`) with a count of 1, indicating that one of these cells is a mine.
-3. The AI will continue to infer from its knowledge base. If other cells are marked as safe or mined, those will be removed from the sentence, and new inferences will be made.
+   - Add a sentence for the neighboring cells (e.g., `(1, 1)`, `(1, 2)`, `(1, 3)`, etc.) with a count of 1.
+3. The AI will infer new safe and mine cells based on its knowledge base, progressively refining its understanding.
 
-The AI continues to expand its knowledge base, allowing it to make more informed decisions on the next safe moves to make, which are covered by the `make_safe_move()` function.
+The AI will use this knowledge to make informed decisions in the `make_safe_move()` function.
 
-#### Conclusion:
-The `add_knowledge()` function is central to how the MinesweeperAI gathers, processes, and applies knowledge about the game’s board. It uses propositional logic to systematically update the AI’s understanding of which cells are safe and which may contain mines.
+
+The `add_knowledge()` function is the backbone of the Minesweeper AI's decision-making process. It allows the AI to gather, process, and apply knowledge about the game board, using propositional logic to systematically infer which cells are safe and which may contain mines.
+
+<br>
+
+## Conclusion
+
+This project has been an insightful journey into the implementation of propositional logic through the creation of an AI for the Minesweeper game. By designing the `Sentence` and `MinesweeperAI` classes and utilizing logical inference, I was able to build a system where the AI can systematically deduce safe moves and identify mines based on the knowledge it accumulates.
+
+Through the process of implementing the various functions—such as `add_knowledge()`, `known_mines()`, and `mark_safe()`—I gained hands-on experience with propositional logic. This project reinforced my understanding of logic-based AI systems and how they can be applied to solve complex problems in games and beyond.
