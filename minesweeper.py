@@ -1,6 +1,6 @@
 import itertools
 import random
-from collections import Counter
+
 
 class Minesweeper():
     """
@@ -22,20 +22,13 @@ class Minesweeper():
                 row.append(False)
             self.board.append(row)
 
-        # # Add mines randomly
-        # while len(self.mines) != mines:
-        #     i = random.randrange(height)
-        #     j = random.randrange(width)
-        #     if not self.board[i][j]:
-        #         self.mines.add((i, j))
-        #         self.board[i][j] = True
-
-        # # FOR DEBUG # Add mines NOT Randomly
-        self.mines.add((0, 3))
-        self.board[0][3] = True
-
-
- 
+        # Add mines randomly
+        while len(self.mines) != mines:
+            i = random.randrange(height)
+            j = random.randrange(width)
+            if not self.board[i][j]:
+                self.mines.add((i, j))
+                self.board[i][j] = True
 
         # At first, player has found no mines
         self.mines_found = set()
@@ -126,7 +119,6 @@ class Sentence():
         if self.count == 0:
             return self.cells 
         return set()
-    
 
     def mark_mine(self, cell):
         """
@@ -145,7 +137,6 @@ class Sentence():
         """
         if cell in self.cells:
             self.cells.remove(cell)
-
 
 
 class MinesweeperAI():
@@ -202,14 +193,14 @@ class MinesweeperAI():
         # 3. Add a new sentence to the AI's knowledge base, based on the value of `cell` and `count`
         x, y = cell
         adjacent_cells = {
-                (x-1,y-1), 
-                (x-1,y), 
-                (x-1,y+1), 
-                (x,y-1), 
-                (x,y+1), 
-                (x+1,y-1), 
-                (x+1,y), 
-                (x+1,y+1)
+            (x-1, y-1), 
+            (x-1, y), 
+            (x-1, y+1), 
+            (x, y-1), 
+            (x, y+1), 
+            (x+1, y-1), 
+            (x+1, y), 
+            (x+1, y+1)
         }
 
         # Filter out cells outside the valid range
@@ -288,7 +279,6 @@ class MinesweeperAI():
             if not found_inferred_sentence:
                 break
 
-
     def make_safe_move(self):
         """
         Returns a safe cell to choose on the Minesweeper board.
@@ -302,42 +292,23 @@ class MinesweeperAI():
         else: 
             return None
             
-
     def make_random_move(self):
         """
         Returns a move to make on the Minesweeper board.
-        Should choose randomly among cells that:
-            1) have not already been chosen, and
-            2) are not known to be mines
         """
-        raise NotImplementedError
+        mines = self.mines 
+        moves_made = self.moves_made
+        board_cells = {(r, c) for r in range(self.width + 1) for c in range(self.height + 1)}
+        board_cells = board_cells - moves_made - mines
+     
+        random_num = random.randint(0, len(board_cells) - 1)
+        
+        sorted_cells = sorted(board_cells)
+        x, y = sorted_cells[random_num]
+
+        new_set = set((x, y))
+        return new_set
 
 
-# FOR DEBUG
-
-def printGame(height=3, width=3, mines=1):
-    game = Minesweeper(height, width, mines)
-    print("===============")
-    game.print()
-    print()
-    print("Height: ",game.height)
-    print("Width: ", game.width)
-    print("Mines: ",game.mines)
-    # print("Board: ",game.board)
-    print("Mines found: ",game.mines_found)
-    print()
-    print("Is it a mine? ", game.is_mine((0,1)))
-    print("Which mines nearby? ", game.nearby_mines((0,1)))
-    print("===============")
-    print()
-
-
-
-if __name__ == "__main__":
-    
+# if __name__ == "__main__": 
     # # DEBUG
-    height=4
-    width=4
-    mines=4
-    printGame(height, width, mines)
-
