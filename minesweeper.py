@@ -213,7 +213,56 @@ class MinesweeperAI():
             5) add any new sentences to the AI's knowledge base
                if they can be inferred from existing knowledge
         """
-        raise NotImplementedError
+
+        # 1. mark the cell as a move that has been made
+        self.moves_made.add(cell)
+
+        # 2. mark the cell as safe
+        self.safes.add(cell)
+
+        # 3. add a new sentence to the AI's knowledge base, based on the value of `cell` and `count`
+        x, y = cell
+        adjacent_cells = {
+                (x-1,y-1), 
+                (x-1,y), 
+                (x-1,y+1), 
+                (x,y-1), 
+                (x,y+1), 
+                (x+1,y-1), 
+                (x+1,y), 
+                (x+1,y+1)
+        }
+
+        # Filter out cells outside the valid range
+        filtered_cells = {
+            (cx, cy) for cx, cy in adjacent_cells
+            if 0 <= cx <= self.height-1 and 0 <= cy <= self.width-1
+        }
+        
+        cells_to_add = {
+            cell for cell in filtered_cells 
+            if cell not in self.mines and cell not in self.safes
+        }
+
+        self.knowledge.append(Sentence(cells_to_add, count))
+        
+        # 4. mark any additional cells as safe or as mines
+        new_mines = set()
+        new_safes = set()
+        for sentence in self.knowledge:
+            new_mines.update(sentence.known_mines())
+            new_safes.update(sentence.known_safes())
+            
+        for cell in new_mines:
+            self.mark_mine(cell)
+        for cell in new_safes:
+            self.mark_safe(cell)
+
+        # 5. add any new sentences to the AI's knowledge base if they can be inferred from existing knowledge
+        # for sentence in self.knowledge:
+        #     print(sentence)
+        
+
 
     def make_safe_move(self):
         """
@@ -254,19 +303,25 @@ def printGame(height=3, width=3, mines=1):
     print("===============")
     print()
 
-def printGameAI(marked_mines, marked_safes, height=3, width=3):
+def printGameAI(height=3, width=3):
     gameai = MinesweeperAI(height, width)
-   
-    for mine in marked_mines:
-        gameai.mark_mine(mine)
-    
-    for mine in marked_safes:
-        gameai.mark_safe(mine)
 
-    print("AI Knowledge: ", gameai.knowledge)
-    print("Known Mines: ", gameai.mines)
-    print("Known Safes: ", gameai.safes)
-    print("Moves Made: ", gameai.moves_made)
+    gameai.add_knowledge((8,7), 1)
+    print()
+    gameai.add_knowledge((6,6), 0)
+    print()
+    gameai.add_knowledge((8,4), 0)
+    print()
+
+
+    
+    print("KNOWLEDGE: ")
+    for sentence in gameai.knowledge:
+        print("Sentence: ", sorted(sentence.cells))
+        print("Count: ", sentence.count)
+    print("========")
+    print("SAFES: ", sorted(gameai.safes))
+    print("MINES: ", sorted(gameai.mines))
 
 def printSentence():
     sentence = Sentence(cells={(4,1),(4,2),(4,3), (5,1),(5,3), (6,1), (6,2), (6,3)}, count=2)
@@ -281,12 +336,10 @@ def printSentence():
 if __name__ == "__main__":
     
     # # DEBUG
-    printGame(height=9, width=8, mines=6)
-
-    # marked_mines = set([(0,1), (1,0)])
-    # marked_safes = {(2,1), (2,2)}
-    # printGameAI(marked_mines, marked_safes)
-
-    printSentence()
+    height=9
+    width=8
+    mines=6
+    # printGame(height, width, mines)
+    printGameAI(height, width)
 
     
