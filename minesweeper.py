@@ -192,16 +192,7 @@ class MinesweeperAI():
 
         # 3. Add a new sentence to the AI's knowledge base, based on the value of `cell` and `count`
         x, y = cell
-        adjacent_cells = {
-            (x-1, y-1), 
-            (x-1, y), 
-            (x-1, y+1), 
-            (x, y-1), 
-            (x, y+1), 
-            (x+1, y-1), 
-            (x+1, y), 
-            (x+1, y+1)
-        }
+        adjacent_cells = set(itertools.product(range(x-1, x+2), range(y-1, y+2)))
 
         # Filter out cells outside the valid range
         filtered_cells = {
