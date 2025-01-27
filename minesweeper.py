@@ -22,29 +22,18 @@ class Minesweeper():
                 row.append(False)
             self.board.append(row)
 
-        # Add mines randomly
-        while len(self.mines) != mines:
-            i = random.randrange(height)
-            j = random.randrange(width)
-            if not self.board[i][j]:
-                self.mines.add((i, j))
-                self.board[i][j] = True
+        # # Add mines randomly
+        # while len(self.mines) != mines:
+        #     i = random.randrange(height)
+        #     j = random.randrange(width)
+        #     if not self.board[i][j]:
+        #         self.mines.add((i, j))
+        #         self.board[i][j] = True
 
-        # # # FOR DEBUG # Add mines NOT Randomly
-        # self.mines.add((1, 0))
-        # self.board[1][0] = True
-        # self.mines.add((1, 4))
-        # self.board[1][4] = True
-        # self.mines.add((0, 7))
-        # self.board[0][7] = True
-        # self.mines.add((4, 4))
-        # self.board[4][4] = True
-        # self.mines.add((6, 2))
-        # self.board[6][2] = True
-        # self.mines.add((6, 3))
-        # self.board[6][3] = True
-        # self.mines.add((8, 6))
-        # self.board[8][6] = True
+        # # FOR DEBUG # Add mines NOT Randomly
+        self.mines.add((0, 3))
+        self.board[0][3] = True
+
 
  
 
@@ -218,7 +207,7 @@ class MinesweeperAI():
         self.moves_made.add(cell)
 
         # 2. mark the cell as safe
-        self.safes.add(cell)
+        self.mark_safe(cell)
 
         # 3. add a new sentence to the AI's knowledge base, based on the value of `cell` and `count`
         x, y = cell
@@ -238,35 +227,39 @@ class MinesweeperAI():
             (cx, cy) for cx, cy in adjacent_cells
             if 0 <= cx <= self.height-1 and 0 <= cy <= self.width-1
         }
-        
-        cells_to_add = {
-            cell for cell in filtered_cells 
-            if cell not in self.mines or cell not in self.safes
-        }
 
-        self.knowledge.append(Sentence(cells_to_add, count))
-        
-        # # 4. mark any additional cells as safe or as mines
-        # while True:
-        #     new_mines = set()
-        #     new_safes = set()
-        #     for sentence in self.knowledge:
-        #         known_mines = sentence.known_mines()
-        #         known_safes = sentence.known_safes()
+        cells_to_add = set()
+        mines_count = 0
+        for cell in filtered_cells:
+            if cell in self.mines:
+                mines_count += 1
+            elif cell not in self.safes:
+                cells_to_add.add(cell)
 
-        #         new_mines.update(known_mines)
-        #         new_safes.update(known_safes)
-    
-        #     for cell in new_mines:
-        #         if cell not in self.mines:
-        #             self.mark_mine(cell)
-        #     for cell in new_safes:
-        #         if cell not in self.safes:
-        #             self.mark_safe(cell)
-            
-        #     # Break if no new mines or safes were found
-        #     if len(new_mines) == 0 and len(new_safes) == 0:
-        #         break
+        # Remove known mines. We don't want to count mines that are already known to us (similar to Sentence's mark_mine() function)
+        adjusted_count = count - mines_count
+
+        print("CELLS TO ADD: ", cells_to_add)
+        print("NEW COUNT: ", adjusted_count)
+
+        if cells_to_add:
+            new_sentence = Sentence(cells_to_add, adjusted_count)
+            self.knowledge.append(new_sentence)
+        
+        # 4) [WIP] Mark any additional cells as safe or as mines
+        #          if it can be concluded based on the AI's knowledge base  
+        safe_cells = set()
+        mine_cells = set()
+        for sentence in self.knowledge:
+            safe_cells.update(sentence.known_safes())
+            mine_cells.update(sentence.known_mines())
+        
+        for cell in safe_cells:
+            self.mark_safe(cell)
+        for cell in mine_cells:
+            self.mark_mine(cell)
+
+        
 
 
     def make_safe_move(self):
@@ -308,23 +301,20 @@ def printGame(height=3, width=3, mines=1):
     print("===============")
     print()
 
-def printGameAI(height=3, width=3):
-    gameai = MinesweeperAI(height, width)
+def printai(height=3, width=3):
+    ai = MinesweeperAI(height, width)
 
-    gameai.add_knowledge((6,6), 0)
+    ai.add_knowledge((1,1), 0)
     print()
-    gameai.add_knowledge((8,4), 0)
-    print()
-
 
     
     print("KNOWLEDGE: ")
-    for sentence in gameai.knowledge:
+    for sentence in ai.knowledge:
         print("Sentence: ", sorted(sentence.cells))
         print("Count: ", sentence.count)
     print("========")
-    print("SAFES: ", sorted(gameai.safes))
-    print("MINES: ", sorted(gameai.mines))
+    print("SAFES: ", sorted(ai.safes))
+    print("MINES: ", sorted(ai.mines))
 
 def printSentence():
     sentence = Sentence(cells={(4,1),(4,2),(4,3), (5,1),(5,3), (6,1), (6,2), (6,3)}, count=2)
@@ -339,10 +329,10 @@ def printSentence():
 if __name__ == "__main__":
     
     # # DEBUG
-    height=9
-    width=8
-    mines=6
-    # printGame(height, width, mines)
-    printGameAI(height, width)
+    height=4
+    width=4
+    mines=4
+    printGame(height, width, mines)
+    printai(height, width)
 
     
