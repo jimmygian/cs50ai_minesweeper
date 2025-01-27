@@ -191,25 +191,15 @@ class MinesweeperAI():
         """
         Called when the Minesweeper board tells us, for a given
         safe cell, how many neighboring cells have mines in them.
-
-        This function should:
-            1) mark the cell as a move that has been made
-            2) mark the cell as safe
-            3) add a new sentence to the AI's knowledge base
-               based on the value of `cell` and `count`
-            4) mark any additional cells as safe or as mines
-               if it can be concluded based on the AI's knowledge base
-            5) add any new sentences to the AI's knowledge base
-               if they can be inferred from existing knowledge
         """
 
-        # 1. mark the cell as a move that has been made
+        # 1. Mark the cell as a move that has been made
         self.moves_made.add(cell)
 
-        # 2. mark the cell as safe
+        # 2. Mark the cell as safe
         self.mark_safe(cell)
 
-        # 3. add a new sentence to the AI's knowledge base, based on the value of `cell` and `count`
+        # 3. Add a new sentence to the AI's knowledge base, based on the value of `cell` and `count`
         x, y = cell
         adjacent_cells = {
                 (x-1,y-1), 
@@ -239,15 +229,12 @@ class MinesweeperAI():
         # Remove known mines. We don't want to count mines that are already known to us (similar to Sentence's mark_mine() function)
         adjusted_count = count - mines_count
 
-        print("CELLS TO ADD: ", cells_to_add)
-        print("NEW COUNT: ", adjusted_count)
-
         if cells_to_add:
             new_sentence = Sentence(cells_to_add, adjusted_count)
             self.knowledge.append(new_sentence)
-        
-        # 4) [WIP] Mark any additional cells as safe or as mines
-        #          if it can be concluded based on the AI's knowledge base  
+
+        # 4. Mark any additional cells as safe or as mines
+        #    if it can be concluded based on the AI's knowledge base  
         while True:
             safe_cells = set()
             mine_cells = set()
@@ -255,7 +242,7 @@ class MinesweeperAI():
                 known_mines = sentence.known_mines()
                 known_safes = sentence.known_safes()
                 safe_cells.update(known_safes)
-                mine_cells.update(known_mines)
+                mine_cells.update(known_mines) 
             
             # Breaks loop when no more inferences can be made (a.k.a if no new cells were found) 
             if not safe_cells and not mine_cells:
@@ -268,6 +255,38 @@ class MinesweeperAI():
                 if cell not in self.mines:
                     self.mark_mine(cell)
 
+            # Clear empties
+            self.knowledge = [s for s in self.knowledge if s.cells]
+
+        # 5. Add any new sentences to the AI's knowledge base
+        #   if they can be inferred from existing knowledge
+        
+        # While no more knowledge can be inferred
+        while True:
+            knowledge_copy = self.knowledge[:]
+            found_inferred_sentence = False
+
+            for s1 in self.knowledge:
+                for s2 in self.knowledge:
+                    # Ensure s1 != s2
+                    if s1 != s2 and s1.cells.issubset(s2.cells):
+                        inferred_cells = s2.cells - s1.cells
+                        inferred_count = s2.count - s1.count
+
+                        # Create inferred sentence
+                        inferred_sentence = Sentence(inferred_cells, inferred_count)
+
+                        # Avoid duplicates
+                        if inferred_sentence not in knowledge_copy:
+                            found_inferred_sentence = True
+                            knowledge_copy.append(inferred_sentence)
+
+            # Update knowledge
+            self.knowledge = knowledge_copy
+
+            # Exit if no new sentences were inferred
+            if not found_inferred_sentence:
+                break
 
 
     def make_safe_move(self):
@@ -309,29 +328,6 @@ def printGame(height=3, width=3, mines=1):
     print("===============")
     print()
 
-def printai(height=3, width=3):
-    ai = MinesweeperAI(height, width)
-
-    ai.add_knowledge((1,1), 0)
-    print()
-
-    
-    print("KNOWLEDGE: ")
-    for sentence in ai.knowledge:
-        print("Sentence: ", sorted(sentence.cells))
-        print("Count: ", sentence.count)
-    print("========")
-    print("SAFES: ", sorted(ai.safes))
-    print("MINES: ", sorted(ai.mines))
-
-def printSentence():
-    sentence = Sentence(cells={(4,1),(4,2),(4,3), (5,1),(5,3), (6,1), (6,2), (6,3)}, count=2)
-    print("Sentence: ", sentence)
-    sentence.mark_safe((5,3))
-    print("Sentence after marking: ", sentence)
-    print(sentence.known_mines())
-    print(sentence.known_safes())
-
 
 
 if __name__ == "__main__":
@@ -341,6 +337,4 @@ if __name__ == "__main__":
     width=4
     mines=4
     printGame(height, width, mines)
-    printai(height, width)
 
-    
