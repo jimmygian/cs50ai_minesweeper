@@ -50,7 +50,8 @@ class Minesweeper():
 
     def is_mine(self, cell):
         i, j = cell
-        return self.board[i][j]
+        if 0 <= i < self.height and 0 <= j < self.width:
+            return self.board[i][j]
 
     def nearby_mines(self, cell):
         """
@@ -58,6 +59,7 @@ class Minesweeper():
         within one row and column of a given cell,
         not including the cell itself.
         """
+        cell = tuple(cell)
 
         # Keep count of nearby mines
         count = 0
@@ -289,16 +291,19 @@ class MinesweeperAI():
         """
         mines = self.mines 
         moves_made = self.moves_made
-        board_cells = {(r, c) for r in range(self.width + 1) for c in range(self.height + 1)}
+        board_cells = {(r, c) for r in range(self.width) for c in range(self.height)}
         board_cells = board_cells - moves_made - mines
-     
-        random_num = random.randint(0, len(board_cells) - 1)
         
-        sorted_cells = sorted(board_cells)
-        x, y = sorted_cells[random_num]
+        rand_range = len(board_cells) - 1
+        if rand_range > 0:
+            random_num = random.randint(0, rand_range)
+        
+            sorted_cells = sorted(board_cells)
+            x, y = sorted_cells[random_num]
 
-        new_set = set((x, y))
-        return new_set
+            return (x, y)
+        else:
+            return None
 
 
 # if __name__ == "__main__": 
