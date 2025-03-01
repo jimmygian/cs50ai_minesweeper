@@ -1,4 +1,4 @@
-# CS50AI | Lecture 1 - Knowledge | Project 2 - [`Minesweeper`](https://cs50.harvard.edu/ai/2024/projects/1/minesweeper/)
+# CS50AI | Lecture 1 - Knowledge | Project 1B - [`Minesweeper`](https://cs50.harvard.edu/ai/2024/projects/1/minesweeper/)
 
 This project is a mandatory assignment from **CS50AI – Lecture 1: "Knowledge"**.
 
